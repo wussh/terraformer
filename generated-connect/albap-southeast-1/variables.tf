@@ -1,0 +1,23 @@
+data "terraform_remote_state" "alb" {
+  backend = "local"
+
+  config = {
+    path = "../../generated-connect/albap-southeast-1/terraform.tfstate"
+  }
+}
+
+data "terraform_remote_state" "sg" {
+  backend = "local"
+
+  config = {
+    path = "../../generated-connect/sgap-southeast-1/terraform.tfstate"
+  }
+}
+
+data "terraform_remote_state" "subnet" {
+  backend = "local"
+
+  config = {
+    path = "../../generated-connect/subnetap-southeast-1/terraform.tfstate"
+  }
+}
