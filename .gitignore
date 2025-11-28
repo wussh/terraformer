@@ -1,0 +1,25 @@
+# Terraform files
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraformrc
+terraform.rc
+
+# Terraform provider binaries
+**/.terraform/providers/
+
+# Crash log files
+crash.log
+crash.*.log
+
+# Exclude all .tfstate files
+*.tfstate
+*.tfstate.backup
+
+# Ignore CLI configuration files
+.terraformrc
+terraform.rc
+
