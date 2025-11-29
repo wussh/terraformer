@@ -1,5 +1,6 @@
 # CloudWatch Metric Filters and Alarms
 # Fixes findings: 3.3.2 through 3.3.16
+# Note: 3.3.8 requires resources in us-east-1 (see kms_cmk_changes_us_east_1 resources)
 
 # CloudWatch Log Group for CloudTrail
 # Note: Adjust the log group name based on your CloudTrail configuration
@@ -187,6 +188,54 @@ resource "aws_cloudwatch_metric_alarm" "authentication_failures" {
 }
 
 # 3.3.8: KMS CMK disable/deletion
+# Note: This needs to be in us-east-1 per Prowler finding
+# CloudWatch log group for CloudTrail in us-east-1
+resource "aws_cloudwatch_log_group" "cloudtrail_us_east_1" {
+  provider          = aws.us-east-1
+  name              = "CloudTrail/DefaultLogGroup"
+  retention_in_days = 365
+
+  kms_key_id = null # Can be set to a KMS key ARN for encryption
+}
+
+# SNS Topic for alarms in us-east-1
+resource "aws_sns_topic" "security_alerts_us_east_1" {
+  provider = aws.us-east-1
+  name     = "security-compliance-alerts"
+}
+
+# Metric filter for KMS CMK disable/deletion in us-east-1
+# Pattern matches DisableKey and ScheduleKeyDeletion events
+# Note: CloudTrail logs these events for both customer-managed and AWS-managed keys
+# The filter will catch all, but the finding specifically requires monitoring customer-managed CMKs
+resource "aws_cloudwatch_log_metric_filter" "kms_cmk_changes_us_east_1" {
+  provider      = aws.us-east-1
+  name          = "KMSCMKDisableOrDeletion"
+  log_group_name = aws_cloudwatch_log_group.cloudtrail_us_east_1.name
+  pattern       = "{ ($.eventName = \"DisableKey\") || ($.eventName = \"ScheduleKeyDeletion\") }"
+
+  metric_transformation {
+    name      = "KMSCMKDisableOrDeletion"
+    namespace = "CloudTrailMetrics"
+    value     = "1"
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "kms_cmk_changes_us_east_1" {
+  provider            = aws.us-east-1
+  alarm_name          = "KMSCMKDisableOrDeletion"
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "KMSCMKDisableOrDeletion"
+  namespace           = "CloudTrailMetrics"
+  period              = "300"
+  statistic           = "Sum"
+  threshold           = "0"
+  alarm_description   = "Monitor for disabling or scheduled deletion of customer-managed KMS CMKs"
+  alarm_actions       = [aws_sns_topic.security_alerts_us_east_1.arn]
+}
+
+# Also keep the eu-west-1 version for consistency
 resource "aws_cloudwatch_log_metric_filter" "kms_cmk_changes" {
   provider   = aws.eu-west-1
   name       = "KMSCMKChanges"

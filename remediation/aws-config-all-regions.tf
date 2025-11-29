@@ -179,24 +179,301 @@ resource "aws_iam_role_policy" "config_s3_policy" {
   })
 }
 
-# Config delivery channel and recorder for each region
-# Using a module-like approach with individual resources per region
+# AWS Config resources for all regions
+# Each region needs: recorder, delivery channel, and recorder status
+# Note: IAM roles are global, so we use the eu-west-1 role for all regions
 
-# Helper locals for region-specific resources
-locals {
-  config_resources = {
-    for region in var.config_regions : region => {
-      provider = "aws.${replace(region, "-", "_")}"
-    }
+# ============================================================================
+# ap-northeast-1
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_ap_northeast_1" {
+  provider = aws.ap-northeast-1
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
   }
 }
 
-# Note: Due to Terraform limitations with dynamic provider references,
-# we'll create a simplified version that works with the default provider
-# and requires manual provider specification or use of workspaces/modules
-# For production, consider using Terraform modules per region
+resource "aws_config_delivery_channel" "config_delivery_channel_ap_northeast_1" {
+  provider       = aws.ap-northeast-1
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/ap-northeast-1"
+  sns_topic_arn  = null
 
-# Config recorder for eu-west-1 (example - expand for all regions)
+  depends_on = [aws_config_configuration_recorder.config_recorder_ap_northeast_1]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_ap_northeast_1" {
+  provider   = aws.ap-northeast-1
+  name       = aws_config_configuration_recorder.config_recorder_ap_northeast_1.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_ap_northeast_1]
+}
+
+# ============================================================================
+# ap-northeast-2
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_ap_northeast_2" {
+  provider = aws.ap-northeast-2
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_ap_northeast_2" {
+  provider       = aws.ap-northeast-2
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/ap-northeast-2"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_ap_northeast_2]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_ap_northeast_2" {
+  provider   = aws.ap-northeast-2
+  name       = aws_config_configuration_recorder.config_recorder_ap_northeast_2.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_ap_northeast_2]
+}
+
+# ============================================================================
+# ap-northeast-3
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_ap_northeast_3" {
+  provider = aws.ap-northeast-3
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_ap_northeast_3" {
+  provider       = aws.ap-northeast-3
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/ap-northeast-3"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_ap_northeast_3]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_ap_northeast_3" {
+  provider   = aws.ap-northeast-3
+  name       = aws_config_configuration_recorder.config_recorder_ap_northeast_3.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_ap_northeast_3]
+}
+
+# ============================================================================
+# ap-south-1
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_ap_south_1" {
+  provider = aws.ap-south-1
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_ap_south_1" {
+  provider       = aws.ap-south-1
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/ap-south-1"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_ap_south_1]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_ap_south_1" {
+  provider   = aws.ap-south-1
+  name       = aws_config_configuration_recorder.config_recorder_ap_south_1.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_ap_south_1]
+}
+
+# ============================================================================
+# ap-southeast-1
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_ap_southeast_1" {
+  provider = aws.ap-southeast-1
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_ap_southeast_1" {
+  provider       = aws.ap-southeast-1
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/ap-southeast-1"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_ap_southeast_1]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_ap_southeast_1" {
+  provider   = aws.ap-southeast-1
+  name       = aws_config_configuration_recorder.config_recorder_ap_southeast_1.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_ap_southeast_1]
+}
+
+# ============================================================================
+# ap-southeast-2
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_ap_southeast_2" {
+  provider = aws.ap-southeast-2
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_ap_southeast_2" {
+  provider       = aws.ap-southeast-2
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/ap-southeast-2"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_ap_southeast_2]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_ap_southeast_2" {
+  provider   = aws.ap-southeast-2
+  name       = aws_config_configuration_recorder.config_recorder_ap_southeast_2.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_ap_southeast_2]
+}
+
+# ============================================================================
+# ca-central-1
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_ca_central_1" {
+  provider = aws.ca-central-1
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_ca_central_1" {
+  provider       = aws.ca-central-1
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/ca-central-1"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_ca_central_1]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_ca_central_1" {
+  provider   = aws.ca-central-1
+  name       = aws_config_configuration_recorder.config_recorder_ca_central_1.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_ca_central_1]
+}
+
+# ============================================================================
+# eu-central-1
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_eu_central_1" {
+  provider = aws.eu-central-1
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_eu_central_1" {
+  provider       = aws.eu-central-1
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/eu-central-1"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_eu_central_1]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_eu_central_1" {
+  provider   = aws.eu-central-1
+  name       = aws_config_configuration_recorder.config_recorder_eu_central_1.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_eu_central_1]
+}
+
+# ============================================================================
+# eu-north-1
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_eu_north_1" {
+  provider = aws.eu-north-1
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_eu_north_1" {
+  provider       = aws.eu-north-1
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/eu-north-1"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_eu_north_1]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_eu_north_1" {
+  provider   = aws.eu-north-1
+  name       = aws_config_configuration_recorder.config_recorder_eu_north_1.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_eu_north_1]
+}
+
+# ============================================================================
+# eu-west-1 (already exists, but keeping for consistency)
+# ============================================================================
 resource "aws_config_configuration_recorder" "config_recorder_eu_west_1" {
   provider = aws.eu-west-1
   name     = "default"
@@ -212,22 +489,242 @@ resource "aws_config_delivery_channel" "config_delivery_channel_eu_west_1" {
   provider       = aws.eu-west-1
   name           = "default"
   s3_bucket_name = aws_s3_bucket.config_delivery.bucket
-  s3_key_prefix   = "config/eu-west-1"
+  s3_key_prefix  = "config/eu-west-1"
   sns_topic_arn  = null
 
   depends_on = [aws_config_configuration_recorder.config_recorder_eu_west_1]
 }
 
 resource "aws_config_configuration_recorder_status" "config_recorder_status_eu_west_1" {
-  provider  = aws.eu-west-1
-  name      = aws_config_configuration_recorder.config_recorder_eu_west_1.name
+  provider   = aws.eu-west-1
+  name       = aws_config_configuration_recorder.config_recorder_eu_west_1.name
   is_enabled = true
 
   depends_on = [aws_config_delivery_channel.config_delivery_channel_eu_west_1]
 }
 
-# Note: Repeat the above pattern for all other regions
-# For brevity, showing one region as example
-# In production, use a module or generate these resources programmatically
+# ============================================================================
+# eu-west-2
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_eu_west_2" {
+  provider = aws.eu-west-2
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_eu_west_2" {
+  provider       = aws.eu-west-2
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/eu-west-2"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_eu_west_2]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_eu_west_2" {
+  provider   = aws.eu-west-2
+  name       = aws_config_configuration_recorder.config_recorder_eu_west_2.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_eu_west_2]
+}
+
+# ============================================================================
+# eu-west-3
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_eu_west_3" {
+  provider = aws.eu-west-3
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_eu_west_3" {
+  provider       = aws.eu-west-3
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/eu-west-3"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_eu_west_3]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_eu_west_3" {
+  provider   = aws.eu-west-3
+  name       = aws_config_configuration_recorder.config_recorder_eu_west_3.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_eu_west_3]
+}
+
+# ============================================================================
+# sa-east-1
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_sa_east_1" {
+  provider = aws.sa-east-1
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_sa_east_1" {
+  provider       = aws.sa-east-1
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/sa-east-1"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_sa_east_1]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_sa_east_1" {
+  provider   = aws.sa-east-1
+  name       = aws_config_configuration_recorder.config_recorder_sa_east_1.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_sa_east_1]
+}
+
+# ============================================================================
+# us-east-1
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_us_east_1" {
+  provider = aws.us-east-1
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_us_east_1" {
+  provider       = aws.us-east-1
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/us-east-1"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_us_east_1]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_us_east_1" {
+  provider   = aws.us-east-1
+  name       = aws_config_configuration_recorder.config_recorder_us_east_1.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_us_east_1]
+}
+
+# ============================================================================
+# us-east-2
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_us_east_2" {
+  provider = aws.us-east-2
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_us_east_2" {
+  provider       = aws.us-east-2
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/us-east-2"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_us_east_2]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_us_east_2" {
+  provider   = aws.us-east-2
+  name       = aws_config_configuration_recorder.config_recorder_us_east_2.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_us_east_2]
+}
+
+# ============================================================================
+# us-west-1
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_us_west_1" {
+  provider = aws.us-west-1
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_us_west_1" {
+  provider       = aws.us-west-1
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/us-west-1"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_us_west_1]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_us_west_1" {
+  provider   = aws.us-west-1
+  name       = aws_config_configuration_recorder.config_recorder_us_west_1.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_us_west_1]
+}
+
+# ============================================================================
+# us-west-2
+# ============================================================================
+resource "aws_config_configuration_recorder" "config_recorder_us_west_2" {
+  provider = aws.us-west-2
+  name     = "default"
+  role_arn = aws_iam_role.config_role.arn
+
+  recording_group {
+    all_supported                 = true
+    include_global_resource_types = true
+  }
+}
+
+resource "aws_config_delivery_channel" "config_delivery_channel_us_west_2" {
+  provider       = aws.us-west-2
+  name           = "default"
+  s3_bucket_name = aws_s3_bucket.config_delivery.bucket
+  s3_key_prefix  = "config/us-west-2"
+  sns_topic_arn  = null
+
+  depends_on = [aws_config_configuration_recorder.config_recorder_us_west_2]
+}
+
+resource "aws_config_configuration_recorder_status" "config_recorder_status_us_west_2" {
+  provider   = aws.us-west-2
+  name       = aws_config_configuration_recorder.config_recorder_us_west_2.name
+  is_enabled = true
+
+  depends_on = [aws_config_delivery_channel.config_delivery_channel_us_west_2]
+}
 
 

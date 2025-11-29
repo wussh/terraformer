@@ -32,7 +32,10 @@ resource "aws_kms_key" "cloudtrail_key" {
         Resource = "*"
         Condition = {
           StringEquals = {
-            "kms:ViaService" = "s3.us-east-2.amazonaws.com"
+            "kms:ViaService" = [
+              "s3.us-east-2.amazonaws.com",
+              "s3.ap-southeast-1.amazonaws.com"
+            ]
           }
         }
       },
@@ -112,17 +115,50 @@ resource "aws_s3_bucket_logging" "cloudtrail_bucket_logging" {
   target_prefix = "cloudtrail-access-logs/"
 }
 
-# Note: CloudTrail trail updates need to be done via data source and resource update
-# This is a placeholder - you'll need to import or reference the existing trail
-# resource "aws_cloudtrail" "management_events" {
-#   provider                      = aws.us-east-2
-#   name                          = "management-events"
-#   s3_bucket_name                = "aws-cloudtrail-logs-448531339111-f2484876"
-#   include_global_service_events  = true
-#   is_multi_region_trail          = true
-#   enable_log_file_validation    = true
-#   kms_key_id                    = aws_kms_key.cloudtrail_key.arn
-#   enable_logging                = true
-# }
+# CloudTrail Trail with Log File Validation, KMS Encryption, S3 Access Logging, and Data Events
+# Finding 3.1.2: Ensure CloudTrail log file validation is enabled
+# Finding 3.1.3: Ensure CloudTrail S3 bucket access logging is enabled
+# Finding 3.1.5: Ensure object-level logging for write events is enabled for S3 buckets
+# Finding 3.1.6: Ensure object-level logging for read events is enabled for S3 buckets
+# Finding 4.2.3: Ensure CloudTrail logs are encrypted at rest using KMS CMKs
+# Note: If the trail already exists, you need to import it first:
+#   terraform import aws_cloudtrail.management_events management-events
+resource "aws_cloudtrail" "management_events" {
+  provider                      = aws.us-east-2
+  name                          = "management-events"
+  s3_bucket_name                = "aws-cloudtrail-logs-448531339111-f2484876"
+  include_global_service_events  = true
+  is_multi_region_trail          = true
+  enable_log_file_validation     = true  # 3.1.2: Log file validation enabled
+  kms_key_id                     = aws_kms_key.cloudtrail_key.arn  # 4.2.3: KMS encryption
+  enable_logging                 = true
+
+  # 3.1.5: S3 data event logging for write operations (Put, Delete, etc.)
+  event_selector {
+    read_write_type                 = "WriteOnly"
+    include_management_events       = false
+
+    data_resource {
+      type   = "AWS::S3::Object"
+      values = ["arn:aws:s3:::*/*"]  # All S3 buckets and objects
+    }
+  }
+
+  # 3.1.6: S3 data event logging for read operations (Get, Head, etc.)
+  event_selector {
+    read_write_type                 = "ReadOnly"
+    include_management_events       = false
+
+    data_resource {
+      type   = "AWS::S3::Object"
+      values = ["arn:aws:s3:::*/*"]  # All S3 buckets and objects
+    }
+  }
+
+  depends_on = [
+    aws_kms_key.cloudtrail_key,
+    aws_kms_alias.cloudtrail_key_alias
+  ]
+}
 
 
