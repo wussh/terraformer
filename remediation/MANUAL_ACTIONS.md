@@ -23,21 +23,48 @@ This document lists all findings that require manual intervention and cannot be 
 ## High Priority
 
 ### 1.3.1 - Remove AdministratorAccess Policies
-**Status:** Manual Review Required  
+**Status:** Automated Solution Available (High Risk - Review Required)  
 **Risk Level:** 4 (High)  
 **Weight:** 100
 
-**Action:**
-1. Review all IAM users, groups, and roles that have `AdministratorAccess` policy attached
-2. Identify the minimum permissions required for each entity
-3. Create custom least-privilege policies
-4. Replace AdministratorAccess with custom policies
-5. Test to ensure functionality is not broken
+**Current State:**
+- `AdministratorAccess` policy is attached to the `admin` group
+- Group members: `geobit.engineer`, `cybersecurity.assessor`
+
+**Remediation Options:**
+
+**Option 1: Use Shell Script (Recommended for Quick Fix)**
+```bash
+cd remediation
+./detach-administrator-access.sh
+```
+
+**Option 2: Use Terraform**
+```bash
+cd remediation
+terraform init
+terraform plan -target=null_resource.detach_administrator_access
+terraform apply -target=null_resource.detach_administrator_access
+```
+
+**Option 3: Manual AWS CLI**
+```bash
+aws iam detach-group-policy \
+  --group-name admin \
+  --policy-arn arn:aws:iam::aws:policy/AdministratorAccess
+```
+
+**⚠️ CRITICAL WARNINGS:**
+1. **Ensure you have alternative admin access** (root account or another admin user) before detaching
+2. **Review what permissions are actually needed** by users in the admin group
+3. **Create custom least-privilege policies** if needed before removing AdministratorAccess
+4. **Test in non-production first** if possible
+5. **Monitor CloudTrail** for access denied errors after removal
 
 **Affected Resources:**
-- AdministratorAccess policy attachments in eu-west-1
+- AdministratorAccess policy attachment: `admin` group (us-east-1)
 
-**Note:** This requires understanding application dependencies and should be done carefully to avoid breaking production systems.
+**Note:** This requires understanding application dependencies and should be done carefully to avoid breaking production systems. See `evidence/iam-1.3.1/README.md` for detailed guidance.
 
 ---
 
@@ -145,20 +172,51 @@ resource "aws_iam_user_group_membership" "ses_users" {
 
 ---
 
-### 2.2.1 - Enable MFA Delete on S3 Bucket
-**Status:** Manual Action Required  
+### 2.2.1 - Enable MFA Delete on S3 Buckets
+**Status:** Automated Script Available (Requires Root Account)  
 **Risk Level:** 3 (Medium)  
 **Weight:** 10
 
-**Action:**
-1. Log in as root user (MFA delete requires root account)
-2. Navigate to S3 → Buckets → `aws-cloudtrail-logs-448531339111-f2484876`
-3. Go to Properties → Bucket Versioning
-4. Enable "MFA delete"
-5. Enter MFA code from hardware device
+**Current State:**
+- MFA Delete is NOT enabled on 3 critical S3 buckets storing audit logs
+- Buckets affected:
+  1. `aws-cloudtrail-access-logs-448531339111` (ap-southeast-1)
+  2. `aws-cloudtrail-logs-448531339111-f2484876` (ap-southeast-1)
+  3. `aws-config-delivery-448531339111` (eu-west-1)
 
-**Affected Bucket:**
-- `aws-cloudtrail-logs-448531339111-f2484876` (ap-southeast-1)
+**⚠️ CRITICAL REQUIREMENTS:**
+1. **MUST use ROOT ACCOUNT** - IAM users cannot enable MFA Delete
+2. **MUST have hardware MFA** - Virtual MFA devices are not supported
+3. **Cannot be done via Console** - Only via AWS CLI
+4. **Cannot be managed by Terraform** - Must be done manually/script
+
+**Remediation Options:**
+
+**Option 1: Use Automated Script (Recommended)**
+```bash
+cd remediation
+# Configure root account credentials first
+export AWS_PROFILE=root  # or aws configure --profile root
+./enable-s3-mfa-delete.sh
+```
+
+**Option 2: Manual AWS CLI (Per Bucket)**
+```bash
+# 1. Enable versioning (if not already enabled)
+aws s3api put-bucket-versioning \
+  --bucket BUCKET_NAME \
+  --versioning-configuration Status=Enabled \
+  --region REGION
+
+# 2. Enable MFA Delete (requires root account + hardware MFA code)
+aws s3api put-bucket-versioning \
+  --bucket BUCKET_NAME \
+  --versioning-configuration Status=Enabled,MFADelete=Enabled \
+  --mfa "arn:aws:iam::448531339111:mfa/root-account-mfa-device MFA_CODE" \
+  --region REGION
+```
+
+**Note:** See `evidence/s3-2.2.1/README.md` for detailed instructions and troubleshooting.
 
 **Note:** This requires root account access and cannot be managed via Terraform for existing buckets.
 

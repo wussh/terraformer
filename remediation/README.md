@@ -6,6 +6,10 @@ This directory contains Terraform configurations to remediate the security findi
 
 - `iam-password-policy.tf` - IAM password policy configuration
 - `iam-support-role.tf` - AWS Support role creation
+- `iam-remove-administrator-access.tf` - Remove AdministratorAccess policy from admin group
+- `iam-saml-provider.tf` - SAML provider template for identity federation (1.2.7)
+- `detach-administrator-access.sh` - Script to detach AdministratorAccess policy (alternative to Terraform)
+- `enable-s3-mfa-delete.sh` - Script to enable MFA Delete on S3 buckets (requires root account)
 - `access-analyzer-all-regions.tf` - Access Analyzer for all regions
 - `cloudtrail-enhancements.tf` - CloudTrail file validation, server access logging, and KMS encryption
 - `s3-secure-transport.tf` - S3 secure transport policy
@@ -28,8 +32,8 @@ The following findings require manual intervention:
    - `geobit.engineer/IAMUserChangePassword`
    - `ses-smtp-geobit-support/AmazonSesSendingAccess`
    - `ses-smtp-user.20210304-021015/AmazonSesSendingAccess`
-4. **1.3.1**: Remove AdministratorAccess policy attachments - Review and remove manually
-5. **2.2.1**: Enable MFA delete on S3 bucket - Requires root account access
+4. **1.3.1**: Remove AdministratorAccess policy attachments - Use `detach-administrator-access.sh` or `terraform apply -target=null_resource.detach_administrator_access`
+5. **2.2.1**: Enable MFA delete on S3 buckets - Use `enable-s3-mfa-delete.sh` (requires root account + hardware MFA)
 6. **2.3.16**: Secure Lightsail instances - Review application requirements first
 
 ## Usage
